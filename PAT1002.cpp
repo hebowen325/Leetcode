@@ -14,13 +14,9 @@ int main()
         cin>>exponent;
         cin>>coefficient;
         if(Map.count(exponent))
-        {
             Map[exponent]+=coefficient;
-        }
         else
-        {
             Map[exponent]=coefficient;
-        }
     }
     cin>>K;
     for(int i=0;i<K;i++)
