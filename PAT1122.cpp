@@ -1,66 +1,152 @@
 #include<iostream>
-#include<algorithm>
 #include<vector>
 using namespace std;
-int matrix[201][201];
-int N,M,K;
-int main()
+typedef struct TreeNode
 {
-    fill(matrix[0],matrix[0]+201*201,0);
-    scanf("%d %d",&N,&M);
-    int node1,node2;
-    for(int i=0;i<M;i++)
+    TreeNode* left;
+    TreeNode* right;
+    int val;
+    int height;
+    TreeNode(int x):val(x),left(NULL),right(NULL){}
+}TreeNode;
+
+int GetHeight(TreeNode* root)
+{
+    if(root==NULL)
     {
-        scanf("%d %d",&node1,&node2);
-        matrix[node1][node2]=matrix[node2][node1]=1;
+        return 0;
     }
-    scanf("%d",&K);
-    int n,tmp;
-    for(int i=0;i<K;i++)
+    else
     {
-        vector<int> Vec;
-        scanf("%d",&n);
-        bool flag=true;
-        for(int j=0;j<n;j++)
+        return root->height;
+    }
+}
+
+int GetBalanceFactor(TreeNode* root)
+{
+    return GetHeight(root->left)-GetHeight(root->right);
+}
+
+void UpdateHeight(TreeNode* root)
+{
+    root->height=max(GetHeight(root->left),GetHeight(root->right))+1;
+}
+
+void RRotate(TreeNode*& root)
+{
+    TreeNode* tmp=root->left;
+    root->left=tmp->right;
+    tmp->right=root;
+    UpdateHeight(root);
+    UpdateHeight(tmp);
+    root=tmp;
+}
+
+void LRotate(TreeNode*& root)
+{
+    TreeNode* tmp=root->right;
+    root->right=tmp->left;
+    tmp->left=root;
+    UpdateHeight(root);
+    UpdateHeight(tmp);
+    root=tmp;
+}
+
+void insert(TreeNode*& root,int x)
+{
+    if(root==NULL)
+    {
+        root=new TreeNode(x);
+    }
+    else
+    {
+        if(x<root->val)
         {
-            scanf("%d",&tmp);
-            Vec.push_back(tmp);
-        }
-        if(n!=N+1||Vec[0]!=Vec[Vec.size()-1])
-        {
-            printf("NO\n");
+            insert(root->left,x);
+            if(GetBalanceFactor(root)==2)
+            {
+                if(GetBalanceFactor(root->left)==1)
+                {
+                    RRotate(root);
+                }
+                else if(GetBalanceFactor(root->left)==-1)
+                {
+                    LRotate(root->left);
+                    RRotate(root);
+                }
+            }
         }
         else
         {
-            int nodes[201]={0};
-            nodes[Vec[0]]=1;
-            for(int t=0;t<N;t++)
+            insert(root->right,x);
+            if(GetBalanceFactor(root)==-2)
             {
-                if(matrix[Vec[t]][Vec[t+1]]!=1)
+                if(GetBalanceFactor(root->right)==-1)
                 {
-                    printf("NO\n");
-                    flag=false;
-                    break;
+                    LRotate(root);
                 }
-                else
+                else if(GetBalanceFactor(root->right)==1)
                 {
-                    if(nodes[Vec[t+1]]==1&&t!=N-1)
-                    {
-                        printf("NO\n");
-                        flag=false;
-                        break;
-                    }
-                    else
-                    {
-                        nodes[Vec[t+1]]=1;
-                    }
+                    RRotate(root->right);
+                    LRotate(root);
                 }
-            }
-            if(flag)
-            {
-                printf("YES\n");
             }
         }
+    }
+    UpdateHeight(root);
+}
+int num[25];
+int main()
+{
+    int N;
+    scanf("%d",&N);
+    TreeNode* root=NULL;
+    for(int i=0;i<N;i++)
+    {
+        scanf("%d",num+i);
+        insert(root,num[i]);
+    }
+    vector<TreeNode*> Vec1;
+    vector<TreeNode*> Vec2;
+    Vec2.push_back(root);
+    printf("%d",root->val);
+    int count=1;
+    bool flag=true;
+    while(!Vec2.empty())
+    {
+        Vec1=Vec2;
+        Vec2.clear();
+        for(int i=0;i<Vec1.size();i++)
+        {
+            if(Vec1[i]->left!=NULL)
+            {
+                Vec2.push_back(Vec1[i]->left);
+                printf(" %d",Vec1[i]->left->val);
+                count++;
+            }
+            else if(flag&&count<N)
+            {
+                flag=false;
+            }
+            if(Vec1[i]->right!=NULL)
+            {
+                Vec2.push_back(Vec1[i]->right);
+                printf(" %d",Vec1[i]->right->val);
+                count++;
+            }
+            else if(flag&&count<N)
+            {
+                flag=false;
+            }
+        }
+    }
+    if(flag)
+    {
+        printf("\nYES");
+    }
+    else
+    {
+        printf("\nNO");
     }
     return 0;
 }
