@@ -1,64 +1,105 @@
 #include<iostream>
 #include<vector>
-#include "limits.h"
-#include<string>
+#include<stack>
 using namespace std;
-string convert_digit(int x)
+typedef struct TreeNode
 {
-    string ans;
-    while(x!=0)
+    int val;
+    TreeNode* left;
+    TreeNode* right;
+    TreeNode(int x):val(x),left(NULL),right(NULL){}
+}TreeNode;
+int preorder[1001];
+int N;
+bool JudgeBST(int start,int end,TreeNode* &root)
+{
+    if(start>end)
     {
-        ans=string(1,'0'+x%10)+ans;
-        x/=10;
+        return true;
     }
-    return ans;
+    root=new TreeNode(preorder[start]);
+    int tmp=start+1;
+    while(tmp<=end&&preorder[tmp]<preorder[start])
+    {
+        tmp++;
+    }
+    int note=tmp-1;
+    while(tmp<=end)
+    {
+        if(preorder[tmp]<preorder[start])
+        {
+            return false;
+        }
+        tmp++;
+    }
+    return JudgeBST(start+1,note,root->left)&&JudgeBST(note+1,end,root->right);
+}
+
+bool JudgeMirrorBST(int start,int end,TreeNode* &root)
+{
+    if(start>end)
+    {
+        return true;
+    }
+    root=new TreeNode(preorder[start]);
+    int tmp=start+1;
+    while(tmp<=end&&preorder[tmp]>=preorder[start])
+    {
+        tmp++;
+    }
+    int note=tmp-1;
+    while(tmp<=end)
+    {
+        if(preorder[tmp]>=preorder[start])
+        {
+            return false;
+        }
+        tmp++;
+    }
+    return JudgeMirrorBST(start+1,note,root->left)&&JudgeMirrorBST(note+1,end,root->right);
+}
+void PostOrderTraverse(TreeNode* root)
+{
+    vector<int> ans;
+    stack<TreeNode*> S;
+    S.push(root);
+    while(!S.empty())
+    {
+        TreeNode* tmp=S.top();
+        S.pop();
+        ans.push_back(tmp->val);
+        if(tmp->left!=NULL)
+        {
+            S.push(tmp->left);
+        }
+        if(tmp->right!=NULL)
+        {
+            S.push(tmp->right);
+        }
+    }
+    for(int i=ans.size()-1;i>0;i--)
+    {
+        printf("%d ",ans[i]);
+    }
+    printf("%d",ans[0]);
 }
 int main()
 {
-    int best_value=INT_MAX;
-    int N,M;
-    cin>>N>>M;
-    int* value= new int[N];
+    scanf("%d",&N);
     for(int i=0;i<N;i++)
     {
-        cin>>value[i];
+        scanf("%d",preorder+i);
     }
-    vector<string> ans;
-    int Value=0;
-    int i=0,j=0;
-    string tmp;
-    for(;i<N;i++)
+    TreeNode* root;
+    if(JudgeBST(0,N-1,root)==false && JudgeMirrorBST(0,N-1,root)==false)
     {
-        Value=0;
-        for(j=i;j<N;j++)
-        {
-            Value+=value[j];
-            if(Value>=M)
-            {
-                break;
-            }
-        }
-        if(Value<M||j==N)
-        {
-            break;
-        }
-        if(Value-M<best_value-M)
-        {
-            tmp=convert_digit(i+1)+"-"+convert_digit(j+1);
-            ans.clear();
-            ans.push_back(tmp);
-            best_value=Value;
-        }
-        else if(Value==best_value)
-        {
-            tmp=convert_digit(i+1)+"-"+convert_digit(j+1);
-            ans.push_back(tmp);
-        }
+        printf("NO");
     }
-    for(int i=0;i<ans.size()-1;i++)
+    else
     {
-        cout<<ans[i]<<endl;
+        printf("YES\n");
+        PostOrderTraverse(root);
     }
-    cout<<ans[ans.size()-1];
     return 0;
 }
+
